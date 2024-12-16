@@ -13,9 +13,9 @@
 
   o Each session will hold an index file (XXXXindx.txt) and timestamp file (XXXXtime.txt).
 
-    - The index file will hold any header info.
+    + The index file will hold any header info.
 
-    - The timestamp file will only be created once we have a valid epoch timestamp.
+    + The timestamp file will only be created once we have a valid epoch timestamp.
 
   o Each data file will start with the session ID, and be suffixed with a 16 bit sequence number, for a maximum of 65,535 data files per session.
 
@@ -23,16 +23,13 @@
 
   o Assuming an average data entry size of ~160bytes, this should give us:
 
-    - ~6400 entries per data file
+    + ~6400 entries per data file
 
-    - ~419,424,000 entries per session
+    + ~419,424,000 entries per session
 
-  o Assuming a data entry once per second, this should give us:
+  o Assuming a data entry once per second, this should give us ~6,990,400 minutes / 116,506.6 hours of runtime
 
-    - ~6,990,400 minutes / 116,506.6 hours of runtime
-
-  o Assuming an 8Gb SD card, this should give us:
-    - ~13 maximum sessions before the disk is full
+  o Assuming an 8Gb SD card, this should give us ~13 maximum sessions before the disk is full
 
   o THEORETICALLY! Theoretically, I should be dating Jessica Alba.
 
