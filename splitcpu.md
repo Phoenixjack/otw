@@ -15,6 +15,7 @@
 | - | WIFI/LORA actions |
 
 ```mermaid
+graph TD;
     CPU1INIT-->SerMonINIT;
     SerMonINIT-->UARTportINIT;
     UARTportINIT-->GPSportINIT;
