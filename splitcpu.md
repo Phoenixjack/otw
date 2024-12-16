@@ -15,20 +15,21 @@
 | - | WIFI/LORA actions |
 
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+    CPU1INIT-->SerMonINIT;
+    SerMonINIT-->UARTportINIT;
+    UARTportINIT-->GPSportINIT;
+    GPSportINIT-->BN0055INIT;
+    BN0055INIT-->CPU1loop;
+    CPU2INIT-->LCDINIT;
+    LCDINIT-->WIFI_LORA_INIT;
+    WIFI_LORA_INIT-->CPU2loop;
+    BN0055INIT-->CPU1loop;
+    CPU1loop-->GPS_UPDATE;
+    GPS_UPDATE-->GPIO_UPDATE;
+    GPIO_UPDATE-->UART_RX_BUFFER;
+    UART_RX_BUFFER-->IF(NEWDATA);
+    IF(NEWDATA)-->SD_WRITE;
+    SD_WRITE-->PACKET_STATS;
+    CPU2loop-->GPS_TIME_UPDATE;
+    GPS_TIME_UPDATE-->LCD_UPDATES;
 ```
-
-
-
-'''mermaid
-sequenceDiagram
-A->> B: Query
-B->> C: Forward query
-Note right of C: Thinking...
-C->> B: Response
-B->> A: Forward response
-'''
