@@ -13,3 +13,22 @@
 |  > SD write |  > Restart sensor |
 |  > Update stats |  > Purge buffer |
 | - | WIFI/LORA actions |
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
+
+
+'''mermaid
+sequenceDiagram
+A->> B: Query
+B->> C: Forward query
+Note right of C: Thinking...
+C->> B: Response
+B->> A: Forward response
+'''
