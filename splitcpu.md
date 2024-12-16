@@ -1,6 +1,8 @@
 | ------ | ------ |
 |  CPU1  |  CPU2  |
+
 | Min Boot Requirements | Init LCD, LORA |
+
 | -> Signal CPU2 | Set runtime settings|
 | ------ | ------ |
 | -LOOP- | -LOOP- |
