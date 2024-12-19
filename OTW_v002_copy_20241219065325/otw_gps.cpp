@@ -28,7 +28,7 @@ struct gps {
 } gps;
 
 bool gps::init() {                // initialize the port and try to configure it
-attachInterrupt(digitalPinToInterrupt(gps_pps_pin), pps_sync_ISR, RISING); GPS.begin(9600);                                // usually 4800 or 9600 baud
+attachInterrupt(digitalPinToInterrupt(GPS_PPS_IN), pps_sync_ISR, RISING); GPS.begin(9600);                                // usually 4800 or 9600 baud
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);   // may not work with all gps modules
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);  // ditto
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);      // 1 Hz update rate
