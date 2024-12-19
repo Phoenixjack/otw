@@ -18,6 +18,12 @@ struct thisnode {
     output_end_of_list
   };
 
+  struct outputs {
+    bool enabled = true;
+    uint32_t interval_msec = 1000;
+    uint32_t next_update = 0;
+  } outputs[output_end_of_list];
+
   struct system {
     bool ready = false;            // has it been initialized?
     bool required= false; // is this system required to run?
@@ -47,6 +53,13 @@ void thisnode::set_defaults(){
     system[sys_lora].init = &lora.init();
     system[sys_lcd].init = &lcd.init();
     // .... point to other functions...
+
+    outputs[output_sd].enabled = true;
+    outputs[output_sd].interval = 1000;
+    outputs[output_lcd].enabled = true;
+    outputs[output_lcd].interval = 100;
+
+
 };
 
 void thisnode::minimum_not_met(){
