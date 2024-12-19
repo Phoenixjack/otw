@@ -4,6 +4,8 @@
 // better aliasing of output and input states
 // tracking of when a button press started so we can differentiate between short and long presses
 
+const uint8_t GPS_PPS_IN = 7;
+
 struct gpio_input {  // add code for software debouncing and short/long presses
   uint8_t pin = 0;
   bool curr_state = false;
