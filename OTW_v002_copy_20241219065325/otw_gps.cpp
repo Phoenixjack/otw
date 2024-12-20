@@ -14,9 +14,11 @@ struct gps {
   uint8_t fixquality = 0;              //
   bool lock = false;                   //
   bool pps_sync_in_progress = false; // we'll set this flag while listening 
+  uint32_t millis_capture = 0; // we'll store the millis() here in the interrupt routine
   uint32_t micros_capture = 0; // we'll store the micros() here in the interrupt routine
   uint32_t epoch_time_sec = 0;             // holds GPS time as epoch timestamp in seconds
-  uint32_t epoch_time_usec = 0; // will hold the LSB portion of epoch time
+  uint64_t up_time_in_usec(uint32_t msec, uint32_t usec); //
+  uint64_t epoch_boot_time = 0; // sub millisecond accurate boottime
   uint32_t next_time_sync = 0;         // holds the next millis() when we'll conduct a epoch calculation and sync to PPS
   bool init();
   bool check();
@@ -63,20 +65,23 @@ bool gps::check() {
 
 void gps::pps_sync_enable() {
   pps_sync_in_progress = true;
+  millis_capture = 0;
   micros_capture = 0; attachInterrupt(digitalPinToInterrupt(GPS_PPS_IN), pps_sync_ISR, RISING);
+};
+
+uint64_t gps::up_time_in_usec(uint32_t msec = millis(), uint32_t usec = micros()) {
+  return ((uint64_t)msec * 1000) + ((uint64_t)(usec%1000));
 };
 
 void gps::pps_sync_disable() {
  detachInterrupt(digitalPinToInterrupt (GPS_PPS_IN)); // disable interrupts so it doesn't happen again 
-  epoch_time_usec = micros() - micros_capture;
   pps_sync_in_progress = false; // clear the flag
   if (GPS.year > 0) {   // I got 99 problems, but this bitch ain't one
     stamp.setDateTime(GPS.year + 2000, GPS.month, GPS.day, GPS.hour, GPS.minute, GPS.seconds);
     epoch_time = stamp.getUnix();
-    if (epoch_time_usec > 1000000) { // if it's been more than a second since we captured pps
-      epoch_time += (epoch_time_usec/1000000);
-      epoch_time_usec %= 1000000;
-    }
+    uint64_t usec_up_time_at_pps = up_time_in_usec(millis_capture, micros_capture);
+    epoch_boot_time = (uint64_t)epoch_time * 1000000;
+    epoch_boot_time -= usec_up_time_at_pps;
   } else {
     epoch_time = 0; // it's invalid, so ditch the value
     epoch_time_usec = 0; // ditto
@@ -87,19 +92,15 @@ void gps::pps_sync_disable() {
 void gps::pps_sync_ISR() {
   if (pps_sync_in_progress) { // just in case the ISR gets called again before postprocessing is complete
     micros_capture = micros();
+    millis_capture = millis();
     pps_sync_in_progress = false;
   }
 };
 
 uint64_t gps::getEpochTime_usec() { 
-  if (epoch_time > 0) {
-    uint64_t time_value = (uint64_t)epoch_time * 1000000; // leave room for msec and usec
-    if (epoch_time_usec > 0) {
-      // time_value += (uint64_t)
-    }
-  } else {
+  // not ready
+
     return 0;
-  } 
 };
 void gps::stage_data() { 
   time_stamp = millis();
