@@ -1,5 +1,7 @@
 #include <UnixTime.h>          // https://www.unixtimestamp.com/index.php
 UnixTime stamp(0);             // a timestamp object with no time zone offset
+#include <stdio.h>
+#include <time.h>
 #include <Adafruit_GPS.h>      // https://github.com/adafruit/Adafruit_GPS
 #define GPSSerial Serial2      // tying Serial2 / TX1/RX1 / hardware pin 11 & 12 to GPS module
 Adafruit_GPS GPS(&GPSSerial);  // initiate
@@ -27,6 +29,7 @@ struct gps {
   void pps_sync_ISR();
   uint64_t getEpochTime_usec();
   void stage_data();
+  uint32_t getEpoch_sec(uint8_t year2digit, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t  second);
 } gps;
 
 bool gps::init() {                // initialize the port and try to configure it GPS.begin(9600);                                // usually 4800 or 9600 baud
@@ -77,8 +80,10 @@ void gps::pps_sync_disable() {
  detachInterrupt(digitalPinToInterrupt (GPS_PPS_IN)); // disable interrupts so it doesn't happen again 
   pps_sync_in_progress = false; // clear the flag
   if (GPS.year > 0) {   // I got 99 problems, but this bitch ain't one
-    stamp.setDateTime(GPS.year + 2000, GPS.month, GPS.day, GPS.hour, GPS.minute, GPS.seconds);
-    epoch_time = stamp.getUnix();
+    // stamp.setDateTime(GPS.year + 2000, GPS.month, GPS.day, GPS.hour, GPS.minute, GPS.seconds);
+    // epoch_time = stamp.getUnix();
+
+    epoch_time = getEpoch_sec(GPS.year, GPS.month, GPS.day, GPS.hour, GPS.minute, GPS.seconds);
     uint64_t usec_up_time_at_pps = up_time_in_usec(millis_capture, micros_capture);
     epoch_boot_time = (uint64_t)epoch_time * 1000000;
     epoch_boot_time -= usec_up_time_at_pps;
@@ -97,11 +102,14 @@ void gps::pps_sync_ISR() {
   }
 };
 
-uint64_t gps::getEpochTime_usec() { 
-  // not ready
-
+uint64_t gps::getEpochTime_usec() {
+  if (epoch_boot_time > 0) {
+    return (epoch_boot_time + up_time_in_usec();
+  } else {
     return 0;
+  }
 };
+
 void gps::stage_data() { 
   time_stamp = millis();
   if (GPS.parse(GPS.lastNMEA())) {  // only load GPS data if we have a GPS fix
@@ -116,4 +124,18 @@ void gps::stage_data() {
       lon = 0;
     }
   }
+};
+
+uint32_t gps::getEpoch_sec(uint8_t year2digit, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t  second) {
+    struct tm t;
+    time_t t_of_day;
+    t.tm_year = year2digit + 100; // referenced from 1900
+    t.tm_mon = month - 1; // Month, where 0 = jan
+    t.tm_mday = day;          // Day of the month
+    t.tm_hour = hour;
+    t.tm_min = minute;
+    t.tm_sec = second;
+    t.tm_isdst = 0;        // Is DST on? 1 = yes, 0 = no, -1 = unknown
+    t_of_day = mktime(&t);
+    return (uint32_t)t_of_day;
 };
