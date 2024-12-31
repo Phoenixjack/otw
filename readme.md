@@ -30,35 +30,6 @@
  - Add packet parsing on the fly, retain count/GID/UID/RSSI/NOISE, dump the rest
 
 
-## Boot Sequence for Dual-Core Raspberry Pi Pico
-
-```mermaid
-flowchart TD
-    Start[Start: Power On] --> SetupRoutine[Setup Routine]
-
-    SetupRoutine --> SerialSetup[Setup Serial Monitor]
-    SerialSetup --> GPSSetup[Setup GPS Module]
-    GPSSetup --> IMUSetup[Setup IMU Sensor]
-    IMUSetup --> SDCardSetup[Setup SD Card Storage]
-    SDCardSetup --> StartCores[Start Both Cores]
-
-    StartCores --> Core1Main[Core 1: Primary Main Loop]
-    StartCores --> Core2Main[Core 2: Secondary Main Loop]
-
-    %% Core 1 Tasks
-    Core1Main --> GPSFunctions[Process GPS Functions]
-    GPSFunctions --> IMUFunctions[Process IMU Data]
-    IMUFunctions --> SDLogging[Log Data to SD Card]
-    SDLogging --> Core1Main
-
-    %% Core 2 Tasks
-    Core2Main --> SerialIO[Process Serial Monitor I/O]
-    SerialIO --> StatusLED[Update Status LEDs]
-    StatusLED --> LCDDisplay[Update LCD Display]
-    LCDDisplay --> Core2Main
-```
-
-
 ## Enhanced Boot Sequence with Shapes and Colors
 
 ```mermaid
@@ -105,7 +76,7 @@ flowchart TD
     style LCDDisplay fill:#ccffff,stroke:#009999,stroke-width:2px
 ```
 
-
+```mermaid
 flowchart TD
     Start((Start)) --> InputData[/Receive Data/]
     InputData --> ProcessData[Process Data]
