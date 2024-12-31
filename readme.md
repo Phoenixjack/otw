@@ -48,7 +48,7 @@ flowchart TD
     Core2Main -->|Run| SerialIO[Serial Monitor I/O]
     Core2Main -->|Run| StatusLED[Status LEDs]
     Core2Main -->|Run| LCDDisplay[LCD Display Updates]
-
+```
 
 
 
@@ -78,3 +78,4 @@ flowchart TD
     SerialIO --> StatusLED[Update Status LEDs]
     StatusLED --> LCDDisplay[Update LCD Display]
     LCDDisplay --> Core2Main
+```
