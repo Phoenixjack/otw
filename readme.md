@@ -36,11 +36,11 @@
 flowchart TD
     %% Nodes for Setup Routine
     Start([Start: Power On]) --> SerialSetup{{Setup Serial Monitor}}
-    SerialSetup --> GPSSetup[Setup GPS Module]
-    GPSSetup --> IMUSetup[Setup IMU Sensor]
-    IMUSetup --> SDCardSetup[Setup SD Card Storage]
+    SerialSetup --> GPSSetup{{Setup GPS Module}}
+    GPSSetup --> IMUSetup{{Setup IMU Sensor}}
+    IMUSetup --> SDCardSetup{{Setup SD Card Storage}}
 
-    SDCardSetup --> SystemReady{"Minimum Boot Requirements met?"}
+    SDCardSetup --> SystemReady{"Min Boot Requirements met?"}
     SystemReady --> StartCores[Start Both Cores]
 
     %% Main Loops
@@ -48,13 +48,13 @@ flowchart TD
     StartCores --> Core2Main[Core 2: Main Loop]
 
     %% Core 1 Tasks
-    Core1Main --> GPSFunctions[/Query GPS/]
+    Core1Main --> GPSFunctions[/Receive GPS/]
     GPSFunctions --> IMUFunctions([Query IMU Sensor])
-    IMUFunctions --> SDLogging[Log Data to SD Card]
+    IMUFunctions --> SDLogging[\Log Data to SD Card\]
     SDLogging --> Core1Main
 
     %% Core 2 Tasks
-    Core2Main --> SerialIO((Receive Serial Input))
+    Core2Main --> SerialIO[/Receive Serial Input/]
     SerialIO --> StatusLED[/Update Status LEDs/]
     StatusLED --> LCDDisplay[\Push Updates to LCD\]
     LCDDisplay --> Core2Main
