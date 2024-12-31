@@ -55,7 +55,7 @@ flowchart TD
 
     %% Core 2 Tasks
     Core2Main --> SerialIO[/Receive Serial Input/]
-    SerialIO --> StatusLED[/Update Status LEDs/]
+    SerialIO --> StatusLED[\Update Status LEDs\]
     StatusLED --> LCDDisplay[\Push Updates to LCD\]
     LCDDisplay --> Core2Main
 
