@@ -46,5 +46,5 @@ flowchart TD
     Core1Main -->|Run| SDLogging[Save Data to SD Card]
 
     Core2Main -->|Run| SerialIO[Serial Monitor I/O]
-    Core2Main -->|Run| StatusLED[Status LEDs (GPIO)]
+    Core2Main -->|Run| StatusLED[Status LEDs]
     Core2Main -->|Run| LCDDisplay[LCD Display Updates]
