@@ -1,8 +1,8 @@
-# SOFTWARE: Vehicle mounted data recorder
+# Vehicle mounted data recorder
   - TARGET HARDWARE: RASPBERRY PI PICO W + BOSCH BN0055 + uBLOX NEO-7M
   - AUTHOR: CHRIS MCCREARY
-  - VERSION: 0.0.1
-  - DATE: 2024-12-13
+  - VERSION: 0.0.2a
+  - DATE: 2024-12-31
 
 #KEY NOTES:
   o For saving to SD card, filenames are limited to 8+3 in length.
@@ -28,3 +28,23 @@
  - Leverage Mesh networking with onboard WiFi / Dump WiFiManager/MQTT?
  - Over the air message confirmation & repeatback of received remote commands
  - Add packet parsing on the fly, retain count/GID/UID/RSSI/NOISE, dump the rest
+
+ ## Boot Sequence for Dual-Core Raspberry Pi Pico
+
+```mermaid
+flowchart TD
+    Start[Start: Power On] --> Core1Setup[Core 1: Setup Routines]
+    Core1Setup -->|Initialize| Serial[Serial Monitor]
+    Core1Setup -->|Initialize| GPS[GPS Module]
+    Core1Setup -->|Initialize| IMU[IMU Sensor]
+    Core1Setup -->|Initialize| SDCard[SD Card Storage]
+    Core1Setup -->|Start| Core1Main[Core 1: Primary Main Loop]
+    Core1Setup -->|Start| Core2Main[Core 2: Secondary Main Loop]
+
+    Core1Main -->|Run| GPSFunctions[GPS Functions]
+    Core1Main -->|Run| IMUFunctions[IMU Data Processing]
+    Core1Main -->|Run| SDLogging[Save Data to SD Card]
+
+    Core2Main -->|Run| SerialIO[Serial Monitor I/O]
+    Core2Main -->|Run| StatusLED[Status LEDs (GPIO)]
+    Core2Main -->|Run| LCDDisplay[LCD Display Updates]
