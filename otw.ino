@@ -3,12 +3,11 @@
 #include <PhoenixJack_serialbuffer_V0.h>
 PhoenixJack_serialbuffer SerMon(&Serial);   // Serial Monitor
 PhoenixJack_serialbuffer MiniDL(&Serial1);  // Pin 2 = RX0 // 115200
-#include "bn0055_gpio.h"
-#include "bn0055_report.h"
-#include "bn0055_sensor.h"
-#include "bn0055_gps.h"
-//#include "PhoenixJack_serializeddatalogger_V2.h"
-#include "modified_sd.h"
+#include "otw_gpio.h"
+#include "otw_report.h"
+#include "otw_sensor.h"
+#include "otw_gps.h"
+#include "otw_sdcard.h"
 //#include "PhoenixJack_lora_v0.h"
 // WIFI: the end goal is https://gitlab.com/painlessMesh/painlessMesh
 
