@@ -64,26 +64,28 @@ flowchart TD
 ```mermaid
 flowchart TD
     %% Nodes for Setup Routine
-    Start[Start: Power On] --> SerialSetup((Setup Serial Monitor))
-    SerialSetup --> GPSSetup{{Setup GPS Module}}
-    GPSSetup --> IMUSetup([Setup IMU Sensor])
+    Start([Start: Power On]) --> SerialSetup{{Setup Serial Monitor}}
+    SerialSetup --> GPSSetup[Setup GPS Module]
+    GPSSetup --> IMUSetup[Setup IMU Sensor]
     IMUSetup --> SDCardSetup[Setup SD Card Storage]
-    SDCardSetup --> StartCores((Start Both Cores))
+
+    SDCardSetup --> SystemReady{"Minimum Boot Requirements met?"}
+    SystemReady --> StartCores[Start Both Cores]
 
     %% Main Loops
-    StartCores --> Core1Main((Core 1: Primary Main Loop))
-    StartCores --> Core2Main((Core 2: Secondary Main Loop))
+    StartCores --> Core1Main[Core 1: Main Loop]
+    StartCores --> Core2Main[Core 2: Main Loop]
 
     %% Core 1 Tasks
-    Core1Main --> GPSFunctions{{Query GPS}}
-    Core1Main --> IMUFunctions([Query IMU Sensor])
-    Core1Main --> SDLogging[Log Data to SD Card]
+    Core1Main --> GPSFunctions[/Query GPS/]
+    GPSFunctions --> IMUFunctions([Query IMU Sensor])
+    IMUFunctions --> SDLogging[Log Data to SD Card]
     SDLogging --> Core1Main
 
     %% Core 2 Tasks
     Core2Main --> SerialIO((Receive Serial Input))
-    Core2Main --> StatusLED[/Update Status LEDs/]
-    Core2Main --> LCDDisplay[\Push Updates to LCD\]
+    SerialIO --> StatusLED[/Update Status LEDs/]
+    StatusLED --> LCDDisplay[\Push Updates to LCD\]
     LCDDisplay --> Core2Main
 
     %% Styling
@@ -101,4 +103,15 @@ flowchart TD
     style SerialIO fill:#ffffcc,stroke:#999900,stroke-width:2px
     style StatusLED fill:#ffccff,stroke:#993399,stroke-width:2px
     style LCDDisplay fill:#ccffff,stroke:#009999,stroke-width:2px
+```
+
+
+flowchart TD
+    Start((Start)) --> InputData[/Receive Data/]
+    InputData --> ProcessData[Process Data]
+    ProcessData --> Decision{"Is Data Valid?"}
+    Decision -->|Yes| OutputData[\Send Data\]
+    Decision -->|No| ErrorProcess[Handle Error]
+    OutputData --> End((End))
+    ErrorProcess --> End
 ```
