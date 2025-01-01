@@ -34,23 +34,25 @@
 
 ```mermaid
 flowchart TD
-    %% Nodes for Setup Routine
-    Start([Start: Power On]) --> SerialSetup{{Setup Serial Monitor}}
-    SerialSetup --> GPSSetup{{Setup GPS Module}}
-    GPSSetup --> IMUSetup{{Setup IMU Sensor}}
-    IMUSetup --> SDCardSetup{{Setup SD Card Storage}}
-
-    SDCardSetup --> SystemReady{"Min Boot Requirements met?"}
-    SystemReady --> StartCores[Start Both Cores]
-
+    %% Define Nodes
+    Start([Start]) --> InitSerMon{{Init Serial Mon}}
+    InitSerMon --> InitUARTin{{Init UART in}}
+    InitUARTin --> InitGPS{{Init GPS}}
+    InitGPS --> InitIMU{{Init IMU}}
+    InitIMU --> InitSDcard{{Init SD card}}
+    InitSDcard --> InitLCD{{Init LCD}}
+	InitLCD --> MinBootReqs{"Min Boot Requirements Met?"}
+	MinBootReqs --> |YES| StartBothCores[Start Both Cores]
+	
     %% Main Loops
-    StartCores --> Core1Main[Core 1: Main Loop]
-    StartCores --> Core2Main[Core 2: Main Loop]
+    StartBothCores --> Core1Main[Core 1: Main Loop]
+    StartBothCores --> Core2Main[Core 2: Main Loop]
 
     %% Core 1 Tasks
     Core1Main --> GPSFunctions[/Receive GPS/]
     GPSFunctions --> IMUFunctions([Query IMU Sensor])
-    IMUFunctions --> SDLogging[\Log Data to SD Card\]
+	IMUFunctions --> GetUARTdata[/Receive UART data/]
+    GetUARTdata --> SDLogging[\Log Data to SD Card\]
     SDLogging --> Core1Main
 
     %% Core 2 Tasks
@@ -59,30 +61,23 @@ flowchart TD
     StatusLED --> LCDDisplay[\Push Updates to LCD\]
     LCDDisplay --> Core2Main
 
-    %% Styling
-    style Start fill:#ffcc00,stroke:#333,stroke-width:2px
-    style SerialSetup fill:#99ccff,stroke:#003366,stroke-width:2px
-    style GPSSetup fill:#ff9999,stroke:#660000,stroke-width:2px
-    style IMUSetup fill:#99ff99,stroke:#006600,stroke-width:2px
-    style SDCardSetup fill:#ccccff,stroke:#000099,stroke-width:2px
-    style StartCores fill:#ffcc99,stroke:#993300,stroke-width:2px
+	StartGPS([Init GPS]) --> InitSerial2{{Serial2:115200 8N1}}
+	InitSerial2 --> ListenGPS[/"Listen GPS:1.5secs"/]
+	ListenGPS --> ReportGPS([Report GPS Status])
+	
+    %% Define Classes
+    classDef startStop fill:#4CAF50,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef process fill:#2196F3,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef decision fill:#FF9800,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef input fill:#9C27B0,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef output fill:#9C27B0,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef config fill:#0CC0DF,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
 
-    style GPSFunctions fill:#ffcccc,stroke:#990000,stroke-width:2px
-    style IMUFunctions fill:#ccffcc,stroke:#009900,stroke-width:2px
-    style SDLogging fill:#ccccff,stroke:#333399,stroke-width:2px
-
-    style SerialIO fill:#ffffcc,stroke:#999900,stroke-width:2px
-    style StatusLED fill:#ffccff,stroke:#993399,stroke-width:2px
-    style LCDDisplay fill:#ccffff,stroke:#009999,stroke-width:2px
-```
-
-```mermaid
-flowchart TD
-    Start((Start)) --> InputData[/Receive Data/]
-    InputData --> ProcessData[Process Data]
-    ProcessData --> Decision{"Is Data Valid?"}
-    Decision -->|Yes| OutputData[\Send Data\]
-    Decision -->|No| ErrorProcess[Handle Error]
-    OutputData --> End((End))
-    ErrorProcess --> End
+    %% Assign Classes
+    class Start,End,StartGPS,ReportGPS startStop;
+    class xxx process;
+    class MinBootReqs decision;
+    class GPSFunctions,SerialIO,GetUARTdata,ListenGPS input;
+	class SDLogging,StatusLED,LCDDisplay output;
+	class InitSerMon,InitUARTin,InitGPS,InitIMU,InitSDcard,InitLCD,InitSerial2 config;
 ```
