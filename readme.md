@@ -43,7 +43,7 @@ flowchart TD
     InitSDcard --> InitLCD{{Init LCD}}
 	InitLCD --> MinBootReqs{"Min Boot Requirements Met?"}
 	MinBootReqs --> |YES| StartBothCores[Start Both Cores]
-	
+
     %% Main Loops
     StartBothCores --> Core1Main[Core 1: Main Loop]
     StartBothCores --> Core2Main[Core 2: Main Loop]
@@ -64,7 +64,7 @@ flowchart TD
 	StartGPS([Init GPS]) --> InitSerial2{{Serial2:115200 8N1}}
 	InitSerial2 --> ListenGPS[/"Listen GPS:1.5secs"/]
 	ListenGPS --> ReportGPS([Report GPS Status])
-	
+
     %% Define Classes
     classDef startStop fill:#4CAF50,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
     classDef process fill:#2196F3,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
@@ -81,3 +81,7 @@ flowchart TD
 	class SDLogging,StatusLED,LCDDisplay output;
 	class InitSerMon,InitUARTin,InitGPS,InitIMU,InitSDcard,InitLCD,InitSerial2 config;
 ```
+https://mermaid.js.org/intro/
+https://mermaid.live/
+https://www.mermaidflow.app/editor
+

@@ -1,78 +1,114 @@
-struct thisnode {
-  enum SYSTEM_NAMES {  //
-    sys_bn55,
-    sys_sd,
-    sys_gps,
-    sys_lcd,
-    sys_dataIn,
-    sys_lora,
-    sys_wifi,
-    sys_end_of_list
+#include <functional>
+#include <array>
+#include <cstdint>
+
+/* System usage: snprintf(system[i].error_plain_text, sizeof(system[i].error_plain_text), "Error: %d", error_code);
+   System default: strncpy(error_plain_text, "No Error", sizeof(error_plain_text));
+   const char* ERROR_MESSAGES[] = {
+    "No Error",
+    "SD Init Failed",
+    "SD Health Error",
+    "Sensor Disconnected",
+    "Unknown Error"
   };
-  enum OUTPUT_TYPES {  //
-    output_serial_monitor,
-    output_sd,
-    output_lcd,
-    output_lora,
-    output_wifi,
-    output_end_of_list
-  };
+  Node.systems[sys_sd].error_plain_text = ERROR_MESSAGES[Node.systems[sys_sd].error_code];
+*/
 
-  struct outputs {
-    bool enabled = true;
-    uint32_t interval_msec = 1000;
-    uint32_t next_update = 0;
-  } outputs[output_end_of_list];
-
-  struct system {
-    bool ready = false;            // has it been initialized?
-    bool required = false;         // is this system required to run?
-    bool fault = false;            // is the system in a fault state?
-    uint32_t time_last_valid = 0;  // last time the system was verified good
-    bool *init = *nullptr;         // points to the init routine for each system
-    uint8_t error_code 0;          // holds the error code for each system
-    bool *check() = *nullptr;      // points to the query routine for each system
-  } system[sys_end_of_list];
-  uint32_t epoch_boot_time_sec = 0;   // duh
-  uint32_t epoch_boot_time_msec = 0;  // JUST the milliseconds/microseconds offset from epoch seconds
-  uint32_t next_epoch_sync_time = 0;  // the minimum millis before we attempt another GPS/epoch sync
-  void set_defaults();
-  void minimum_not_met();
-  void retry();
-} thisnode;
-
-void thisnode::set_defaults() {
-  system[sys_bn55].required = true;
-  system[sys_bn55].init = &bn55.init();
-  system[sys_bn55].check = &bn55.check();
-  system[sys_sd].required = true;
-  system[sys_sd].init = &sd.init();
-  system[sys_sd].check = &sd.check();
-
-  system[sys_gps].init = &gps.init();
-  system[sys_lora].init = &lora.init();
-  system[sys_lcd].init = &lcd.init();
-  // .... point to other functions...
-
-  outputs[output_sd].enabled = true;
-  outputs[output_sd].interval = 1000;
-  outputs[output_lcd].enabled = true;
-  outputs[output_lcd].interval = 100;
+enum SYSTEM_NAMES {  // Define your system names
+  sys_bn55,
+  sys_sd,
+  sys_gps,
+  sys_lcd,
+  sys_lora,
+  sys_wifi,
+  sys_end_of_list
 };
 
-void thisnode::minimum_not_met() {
-  for (uint8_t i = 0; i < sys_end_of_list; i++) {
-    if (system[i].required && !system[i].ready) {
-      if (system[i].init()) {
-        system[i].ready = true;
-        time_last_valid = millis();
+enum SYSTEM_STATE {  // Define system states
+  STATE_UNINITIALIZED,
+  STATE_READY,
+  STATE_FAULT
+};
+
+struct System {  // System structure
+  SYSTEM_STATE state = STATE_UNINITIALIZED;
+  bool required = false;
+  uint32_t last_valid_time = 0;  // Last valid check time
+  std::function<bool()> init;    // Initialization function
+  std::function<bool()> check;   // Periodic health check function
+  uint8_t error_code = 0;        // Last error code
+  char error_plain_text[21];     // for simplicity, we'll allow each subsystem to return a 20 character easily readable error status
+};
+
+struct Node {  // Node structure
+  std::array<System, sys_end_of_list> systems;
+  void set_defaults() {
+    systems[sys_bn55].required = true;
+    systems[sys_bn55].init = []() {
+      return bno055.init();
+    };
+    systems[sys_bn55].check = []() {
+      return bno055.check();
+    };
+
+    systems[sys_sd].required = true;
+    systems[sys_sd].init = []() {
+      return  sd.init();
+    };
+    systems[sys_sd].check = []() {
+      return true;  // sd.check();
+    };
+
+    systems[sys_gps].init = []() {
+      return true;  // gps.init();
+    };
+    systems[sys_gps].check = []() {
+      return true;  // gps.check();
+    };
+
+    systems[sys_lcd].init = []() {
+      return true;  // lcd.init();
+    };
+    systems[sys_lcd].check = []() {
+      return true;  // lcd.check();
+    };
+    // Add other systems similarly
+  }
+  void check_minimum() {
+    for (auto& system : systems) {
+      if (system.required && system.state != STATE_READY) {
+        if (system.init && system.init()) {
+          system.state = STATE_READY;
+          system.last_valid_time = millis();
+        } else {
+          system.state = STATE_FAULT;
+        }
       }
     }
   }
-};
 
-void thisnode::retry(){
-  // similar to init, but reinits with nonblocking delays
-  // make use of system[i].ready, fault, & time_last_valid
+  void retry_faults() {
+    uint32_t current_time = millis();
+    for (auto& system : systems) {
+      if (system.state == STATE_FAULT) {
+        if (system.init && system.init()) {
+          system.state = STATE_READY;
+          system.last_valid_time = current_time;
+        }
+      }
+    }
+  }
 
+  void monitor_systems() {
+    uint32_t current_time = millis();
+    for (auto& system : systems) {
+      if (system.check && system.state == STATE_READY) {
+        if (!system.check()) {
+          system.state = STATE_FAULT;
+        } else {
+          system.last_valid_time = current_time;
+        }
+      }
+    }
+  }
 };
