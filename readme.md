@@ -63,23 +63,37 @@ flowchart TD
     LCDDisplay --> Core2Main
 
     %% SUBSYSTEMS
+    InitSerMon --> StartSerMon
 	StartSerMon([Init SerMon]) --> InitSerial{{Serial:115200 8N1}}
 	InitSerial --> ReportSerMon([Report SerMon Status])
 	ReportSerMon --> WatchdogInit[Watchdog Init]
 	
+    InitUARTin --> StartUARTIn
     StartUARTIn([Init SerMon]) --> InitUARTIn{{Serial1:115200 8N1}}
 	InitUARTIn --> ReportUARTIn([Report SerMon Status])
 	ReportUARTIn --> WatchdogInit
 
+    InitGPS --> StartGPS
     StartGPS([Init GPS]) --> InitSerial2{{Serial2:9600 8N1}}
 	InitSerial2 --> ListenGPS[/"Listen GPS:1.5secs"/]
 	ListenGPS --> ReportGPS([Report GPS Status])
 	ReportGPS --> WatchdogInit
 
+    InitIMU --> StartIMU
     StartIMU([Init IMU]) --> ConfigIMU{{"IMU:OPERATION_MODE_NDOF"}}
 	ConfigIMU --> SelfTestIMU[/"IMU Self Test"/]
 	SelfTestIMU --> ReportIMU([Report IMU Status])
 	ReportIMU --> WatchdogInit
+
+    InitSDcard --> StartSD([Init SD])
+    StartSD --> ConfigSD{{"SPI Init: RP2040 SD Library"}}
+	ConfigSD --> ReportSD([Report SD Status])
+	ReportSD --> WatchdogInit
+
+    InitLCD --> StartLCD([Init LCD])
+    StartLCD([Init IMU]) --> ConfigLCD{{"I2C Init: PCF8574 Iface"}}
+	ConfigLCD --> ReportLCD([Report LCD Status])
+	ReportLCD --> WatchdogInit
 
 	WatchdogInit --> MinBootReqs
 
@@ -93,11 +107,13 @@ flowchart TD
 
     %% Assign Classes
     class Start,End,StartSerMon,ReportSerMon,StartUARTIn,ReportUARTIn,StartGPS,ReportGPS,StartIMU,ReportIMU startStop;
+    class StartSD,StartLCD,ReportLCD,ReportSD startStop
     class WatchdogInit,Core1Main,Core2Main,StartBothCores process;
     class MinBootReqs decision;
     class GPSFunctions,SerialIO,GetUARTdata,ListenGPS,SelfTestIMU input;
 	class SDLogging,StatusLED,LCDDisplay output;
 	class InitSerMon,InitUARTin,InitUARTIn,InitGPS,InitIMU,InitSDcard,InitLCD,InitSerial,InitSerial2,ConfigIMU config;
+    class ConfigLCD,ConfigSD config
 ```
 
 https://mermaid.live/
