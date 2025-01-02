@@ -43,6 +43,7 @@ flowchart TD
     InitSDcard --> InitLCD{{Init LCD}}
 	InitLCD --> MinBootReqs{"Min Boot Requirements Met?"}
 	MinBootReqs --> |YES| StartBothCores[Start Both Cores]
+    MinBootReqs --> |NO| InitSerMon{{Init Serial Mon}}
 	
     %% Main Loops
     StartBothCores --> Core1Main[Core 1: Main Loop]
@@ -64,17 +65,23 @@ flowchart TD
     %% SUBSYSTEMS
 	StartSerMon([Init SerMon]) --> InitSerial{{Serial:115200 8N1}}
 	InitSerial --> ReportSerMon([Report SerMon Status])
+	ReportSerMon --> WatchdogInit[Watchdog Init]
 	
     StartUARTIn([Init SerMon]) --> InitUARTIn{{Serial1:115200 8N1}}
 	InitUARTIn --> ReportUARTIn([Report SerMon Status])
+	ReportUARTIn --> WatchdogInit
 
     StartGPS([Init GPS]) --> InitSerial2{{Serial2:9600 8N1}}
 	InitSerial2 --> ListenGPS[/"Listen GPS:1.5secs"/]
 	ListenGPS --> ReportGPS([Report GPS Status])
+	ReportGPS --> WatchdogInit
 
     StartIMU([Init IMU]) --> ConfigIMU{{"IMU:OPERATION_MODE_NDOF"}}
 	ConfigIMU --> SelfTestIMU[/"IMU Self Test"/]
 	SelfTestIMU --> ReportIMU([Report IMU Status])
+	ReportIMU --> WatchdogInit
+
+	WatchdogInit --> MinBootReqs
 
     %% Define Classes
     classDef startStop fill:#4CAF50,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
@@ -86,13 +93,16 @@ flowchart TD
 
     %% Assign Classes
     class Start,End,StartSerMon,ReportSerMon,StartUARTIn,ReportUARTIn,StartGPS,ReportGPS,StartIMU,ReportIMU startStop;
-    class xxx process;
+    class WatchdogInit,Core1Main,Core2Main,StartBothCores process;
     class MinBootReqs decision;
     class GPSFunctions,SerialIO,GetUARTdata,ListenGPS,SelfTestIMU input;
 	class SDLogging,StatusLED,LCDDisplay output;
 	class InitSerMon,InitUARTin,InitUARTIn,InitGPS,InitIMU,InitSDcard,InitLCD,InitSerial,InitSerial2,ConfigIMU config;
 ```
-https://mermaid.js.org/intro/
+
 https://mermaid.live/
+
 https://www.mermaidflow.app/editor
+
+https://mermaid.js.org/intro/
 
