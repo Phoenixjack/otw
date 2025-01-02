@@ -41,7 +41,7 @@ flowchart TD
     InitGPS --> InitIMU{{Init IMU}}
     InitIMU --> InitSDcard{{Init SD card}}
     InitSDcard --> InitLCD{{Init LCD}}
-	InitLCD --> MinBootReqs{"Min Boot Requirements Met?"}
+    WatchdogInit --> MinBootReqs{"Min Boot Requirements Met?"}
 	MinBootReqs --> |YES| StartBothCores[Start Both Cores]
     MinBootReqs --> |NO| InitSerMon{{Init Serial Mon}}
 	
@@ -51,8 +51,8 @@ flowchart TD
 
     %% Core 1 Tasks
     Core1Main --> GPSFunctions[/Receive GPS/]
-    GPSFunctions --> IMUFunctions([Query IMU Sensor])
-	IMUFunctions --> GetUARTdata[/Receive UART data/]
+    GPSFunctions --> QueryIMU[/Query IMU Sensor/]
+    QueryIMU --> GetUARTdata[/Receive UART data/]
     GetUARTdata --> SDLogging[\Log Data to SD Card\]
     SDLogging --> Core1Main
 
@@ -60,17 +60,19 @@ flowchart TD
     Core2Main --> SerialIO[/Receive Serial Input/]
     SerialIO --> StatusLED[\Update Status LEDs\]
     StatusLED --> LCDDisplay[\Push Updates to LCD\]
-    LCDDisplay --> Core2Main
+    LCDDisplay --> WatchdogProcess[Watchdog Check]
+    WatchdogProcess --> Core2Main
 
     %% SUBSYSTEMS
     InitSerMon --> StartSerMon
-	StartSerMon([Init SerMon]) --> InitSerial{{Serial:115200 8N1}}
+	StartSerMon([Init SerMon]) --> InitSerial{{"Serial:115200 8N1"}}
 	InitSerial --> ReportSerMon([Report SerMon Status])
 	ReportSerMon --> WatchdogInit[Watchdog Init]
 	
     InitUARTin --> StartUARTIn
-    StartUARTIn([Init SerMon]) --> InitUARTIn{{Serial1:115200 8N1}}
-	InitUARTIn --> ReportUARTIn([Report SerMon Status])
+    StartUARTIn([Init UART In]) --> InitUARTIn{{"Serial1:115200 8N1"}}
+    InitUARTIn --> PacketAnalyzer{{Packet Analysis}}
+	PacketAnalyzer --> ReportUARTIn([Report UART In Status])
 	ReportUARTIn --> WatchdogInit
 
     InitGPS --> StartGPS
@@ -91,29 +93,41 @@ flowchart TD
 	ReportSD --> WatchdogInit
 
     InitLCD --> StartLCD([Init LCD])
-    StartLCD([Init IMU]) --> ConfigLCD{{"I2C Init: PCF8574 Iface"}}
+    StartLCD([Init LCD]) --> ConfigLCD{{"I2C Init: PCF8574 Iface"}}
 	ConfigLCD --> ReportLCD([Report LCD Status])
 	ReportLCD --> WatchdogInit
 
-	WatchdogInit --> MinBootReqs
-
+	
     %% Define Classes
-    classDef startStop fill:#4CAF50,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef initialstart fill:#FF9800,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef start fill:#4CAF50,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef stop fill:#0033AF,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef initializer fill:#229911,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef decision fill:#FF2200,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef input fill:#7C0770,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef output fill:#AC37C0,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
+    classDef config fill:#550007,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
     classDef process fill:#2196F3,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
-    classDef decision fill:#FF9800,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
-    classDef input fill:#9C27B0,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
-    classDef output fill:#9C27B0,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
-    classDef config fill:#0CC0DF,stroke:#333,stroke-width:2px,font-size:14px,color:#fff;
-
+    
     %% Assign Classes
-    class Start,End,StartSerMon,ReportSerMon,StartUARTIn,ReportUARTIn,StartGPS,ReportGPS,StartIMU,ReportIMU startStop;
-    class StartSD,StartLCD,ReportLCD,ReportSD startStop
-    class WatchdogInit,Core1Main,Core2Main,StartBothCores process;
+    %% start
+    class Start initialstart;
+    %% start
+    class StartSerMon,StartUARTIn,StartSD,StartLCD,StartGPS,StartIMU start;
+    %% stop
+    class End,ReportSerMon,ReportLCD,ReportUARTIn,ReportGPS,ReportSD,ReportIMU stop
+    %% process
+    class WatchdogInit,Core1Main,Core2Main,StartBothCores,WatchdogProcess process;
+    %% decision
     class MinBootReqs decision;
-    class GPSFunctions,SerialIO,GetUARTdata,ListenGPS,SelfTestIMU input;
+    %% initializer
+    class InitSerMon,InitUARTin,InitGPS,InitIMU,InitSDcard,InitLCD initializer;
+    %% input
+    class GPSFunctions,SerialIO,GetUARTdata,ListenGPS,SelfTestIMU,QueryIMU input;
+    %% output
 	class SDLogging,StatusLED,LCDDisplay output;
-	class InitSerMon,InitUARTin,InitUARTIn,InitGPS,InitIMU,InitSDcard,InitLCD,InitSerial,InitSerial2,ConfigIMU config;
-    class ConfigLCD,ConfigSD config
+    %% config
+    class ConfigIMU,ConfigLCD,ConfigSD,PacketAnalyzer,InitUARTIn,InitSerial,InitSerial2 config
 ```
 
 https://mermaid.live/
