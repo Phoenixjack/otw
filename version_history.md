@@ -1,6 +1,6 @@
 ## V0_0_2:
+[ ] major rebuild of code
 [ ] fix packet stats code
-[ ] have GPS struct save data to itself and REPORT struct pull from GPS
 [ ] introduce lcd display
 [ ] fixed double entry of first filename
 
@@ -9,7 +9,7 @@
 [X] first running version that logs GPS data to SD card
 [X] MASSIVE cleanup/reorg of code
 [X] GPS integration
-[X] Integrated PhoenixJack_serializeddatalogger_V2 for writing to SD card 
+[X] Integrated PhoenixJack_serializeddatalogger_V2 for writing to SD card
 [X] ~~Modified main loop to log GPS/heading every second, regardless of whether we have data missed_packets_consecutive~~
 [X] ~~Modified main loop to replace report.buffer with "NULL" after handling a health packet. Prevents us from writing the last packet repeatedly after packets drop~~
 BUGS:

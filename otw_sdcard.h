@@ -15,7 +15,7 @@ SdVolume volume;
 File root;
 File myFile;
 
-struct sd {
+struct sdhandler {
 public:
   enum SD_STATUS_CODE {
     SD_STATUS_NOT_STARTED,
@@ -124,7 +124,7 @@ private:
 
   // Helper methods
   void handleFileCreationError();
-} sd;
+};
 
 //   enum SD_STATUS_CODE {SD_STATUS_NOT_STARTED,SD_STATUS_INITIALIZING_HW,SD_STATUS_INITIALIZED_HW,SD_STATUS_MOUNTED_CARD,SD_STATUS_MOUNTED_FS,
 //   SD_STATUS_READY,SD_STATUS_CRITICAL_ERROR,SD_STATUS_MINOR_ERROR,,SD_STATUS_END_OF_LIST};
@@ -135,18 +135,18 @@ private:
 
 //   enum SD_LAST_ACTION {SD_LAST_NO_ACTION_YET,SD_LAST_INDEX_FILE_WRITTEN,SD_LAST_INDEX_UPDATED,SD_LAST_OPENED_FOR_WRITE,SD_LAST_END_OF_LIST};
 
-bool sd::hasCritFault() {
+bool sdhandler::hasCritFault() {
   return (curr_status == SD_STATUS_CRITICAL_ERROR);
 }
-bool sd::hasMinorFault() {
+bool sdhandler::hasMinorFault() {
   return (curr_status == SD_STATUS_MINOR_ERROR);
 }
 
-bool sd::isReady() {
+bool sdhandler::isReady() {
   return (curr_status == SD_STATUS_READY);
 }
 
-bool sd::init() {
+bool sdhandler::init() {
   curr_status = SD_STATUS_INITIALIZING_HW;
   if (initHardware()) {
     if (mountCard()) {
@@ -160,7 +160,7 @@ bool sd::init() {
   return isReady();
 }
 
-bool sd::initHardware() {
+bool sdhandler::initHardware() {
   if (SD.begin(PIN_SD_SS)) {
     curr_status = SD_STATUS_INITIALIZED_HW;
   } else {
@@ -170,7 +170,7 @@ bool sd::initHardware() {
   return !hasCritFault();
 }
 
-bool sd::mountCard() {
+bool sdhandler::mountCard() {
   if (card.init(SPI_HALF_SPEED, PIN_SD_SS)) {
     curr_status = SD_STATUS_MOUNTED_CARD;
   } else {
@@ -180,7 +180,7 @@ bool sd::mountCard() {
   return !hasCritFault();
 }
 
-bool sd::initFS() {
+bool sdhandler::initFS() {
   if (volume.init(card)) {
     volumeSizeKB = (volume.blocksPerCluster() * volume.clusterCount() / 2);
     curr_status = SD_STATUS_MOUNTED_FS;
@@ -191,7 +191,7 @@ bool sd::initFS() {
   return !hasCritFault();
 }
 
-void sd::calculateCardSpace() {
+void sdhandler::calculateCardSpace() {
   if (volumeSizeKB > 0) {
     volumeUsedKB = 0;
     directoryCount = 0;
@@ -207,7 +207,7 @@ void sd::calculateCardSpace() {
   }
 }
 
-void sd::calculateUsedSpace(File dir) {
+void sdhandler::calculateUsedSpace(File dir) {
   while (true) {
     File entry = dir.openNextFile();
     if (!entry) { break; }
@@ -222,17 +222,14 @@ void sd::calculateUsedSpace(File dir) {
   }
 }
 
-float sd::convertKBtoGB(uint32_t kb) {
+float sdhandler::convertKBtoGB(uint32_t kb) {
   return static_cast<float>(kb) / 1048576;
 }
 
-int16_t sd::generateRandom() {
+int16_t sdhandler::generateRandom() {
   return static_cast<uint16_t>(get_rand_32());
 }
 
-bool sd::doesFileExist(const char* fileNameInput) {
+bool sdhandler::doesFileExist(const char* fileNameInput) {
   return SD.exists(fileNameInput);
 }
-
-// The other functions can follow the same pattern with clean separation of logic.
-// ...

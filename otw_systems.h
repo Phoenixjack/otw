@@ -52,8 +52,8 @@ struct Node {  // Node structure
     };
 
     systems[sys_sd].required = true;
-    systems[sys_sd].init = []() {
-      return  sd.init();
+    systems[sys_sd].init = []() {  // <<<<<<<<<<<<<<<<<<<<<<<<< add code here for if sd good, then datalogger.init();
+      return sd.init();
     };
     systems[sys_sd].check = []() {
       return true;  // sd.check();

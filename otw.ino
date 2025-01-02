@@ -2,10 +2,13 @@
 #include "pico/multicore.h"
 #include "otw_imu.h"
 #include "otw_sdcard.h"
+#include "otw_datalogger.h"
 #include "otw_systems.h"
 
 // we're keeping the forward declarations separate from the calling of the instance
 // helps with interdependencies
+sdhandler sd;
+Datalogger datalogger(sd);
 Node thisnode;
 
 void setup() {
