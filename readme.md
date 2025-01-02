@@ -4,7 +4,7 @@
   - VERSION: 0.0.2a
   - DATE: 2024-12-31
 
-#KEY NOTES:
+# KEY NOTES:
   o For saving to SD card, filenames are limited to 8+3 in length.
   o To keep session names unique, a session is created with a random 16 bit / 2 byte / 4 hex character ID (0x0000-0xFFFF).
   o Session IDs will serve as the prefix for each session.
